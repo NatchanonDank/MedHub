@@ -13,6 +13,13 @@ export interface Medication {
   sideEffects?: string | string[];
   warnings?: string | string[];
   interactions?: string[];
+  strength?: string;
+  dosageForm?: string;
+  prescriptionType?: string;
+  specialTag?: string;
+  dosageInstruction?: string;
+  appearance?: string;
+  pregnancyCategory?: string;
   image?: string;
   imageUrl?: string;
 }

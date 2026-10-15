@@ -1,150 +1,131 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router';
-import { useMedications, type Medication } from '../hooks/useMedications';
-import { useMedStore } from '../stores/useMedStore';
+import React, { useState, useMemo } from 'react';
+import { useMedications } from '../hooks/useMedications';
+import MedicationCard from '../components/MedicationCard';
 
 export const MedListPage: React.FC = () => {
-  // ดึง Server State จาก TanStack Query
-  const { data, isLoading, isError, error, refetch } = useMedications();
-
-  // ดึง Client State จาก Zustand Store
-  const { bookmarks, toggleBookmark } = useMedStore();
-
-  // Local UI State สำหรับช่องค้นหาและตัวกรอง
+  // TanStack Query
+  const { data: medicationsData, isLoading, isError, refetch } = useMedications();
+  
+  // State สำหรับช่องค้นหา ตัวกรองหมวดหมู่ และการเรียงลำดับ
   const [searchTerm, setSearchTerm] = useState('');
-  const [showOnlyBookmarks, setShowOnlyBookmarks] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [sortOrder, setSortOrder] = useState('A-Z');
 
-  // สถานะ Loading: แสดงโครงร่างกระพริบด้วย DaisyUI Skeleton
+  // ดึงข้อมูลผลลัพธ์ยาทั้งหมดจากโครงสร้าง API response
+  const medications = medicationsData?.results || [];
+
+  const categories = useMemo(() => {
+    if (!medicationsData) return [];
+    const cats = medications.map((med: any) => med.category || med.drugClass);
+    return Array.from(new Set(cats.filter(Boolean)));
+  }, [medicationsData, medications]);
+
+  // จัดการข้อมูลการค้นหาและกรอง
+  const filteredMedications = useMemo(() => {
+    if (!medications) return [];
+    let result = medications;
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      result = result.filter((med: any) => 
+        med.name.toLowerCase().includes(lowerSearch) ||
+        (med.genericName && med.genericName.toLowerCase().includes(lowerSearch)) ||
+        (med.brandName && med.brandName.toLowerCase().includes(lowerSearch))
+      );
+    }
+
+    // หมวดหมู่ 
+    if (selectedCategory) {
+      result = result.filter((med: any) => (med.category || med.drugClass) === selectedCategory);
+    }
+
+    // A-Z / Z-A 
+    result = [...result].sort((a: any, b: any) => {
+      if (sortOrder === 'A-Z') {
+        return a.name.localeCompare(b.name);
+      } else {
+        return b.name.localeCompare(a.name);
+      }
+    });
+
+    return result;
+  }, [medications, searchTerm, selectedCategory, sortOrder]);
+
+  // กรณีดึงข้อมูลยังไม่เสร็จ!!!!!
   if (isLoading) {
     return (
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Skeleton ส่วนค้นหา */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <div className="skeleton h-12 flex-1 rounded-lg" />
-          <div className="skeleton h-12 w-48 rounded-lg" />
+      <div className="w-full flex flex-col justify-center items-center py-20 gap-4">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+        <p className="text-base-content/60 font-medium">กำลังโหลดฐานข้อมูลยา...</p>
+      </div>
+    );
+  }
+
+  // กรณีดึงข้อมูลหรือหา JSON ไม่เจอ!!!!
+  if (isError || !medicationsData) {
+    return (
+      <div className="text-center py-20 space-y-4">
+        <p className="text-error font-bold text-lg">ไม่สามารถโหลดข้อมูลยาได้ โปรดตรวจสอบไฟล์ JSON</p>
+        <button onClick={() => refetch()} className="btn btn-sm btn-primary">ลองใหม่ (Retry)</button>
+      </div>
+    );
+  }
+  return (
+    <div className="w-full max-w-7xl mx-auto space-y-6">
+      {/* ช่องค้นหา, เลือกหมวดหมู่, เรียงลำดับ A-Z/Z-A) */}
+      <div className="flex flex-col md:flex-row gap-4 mb-8 bg-base-100 p-4 rounded-xl shadow-sm border border-base-200">
+        <div className="form-control flex-1">
+          <input 
+            type="text" 
+            placeholder="ค้นหาชื่อยา, ชื่อสามัญ..." 
+            className="input input-bordered w-full" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-        {/* Skeleton Grid จำลองการ์ดยา */}
+        <div className="form-control w-full md:w-48 shrink-0">
+          <select 
+            className="select select-bordered w-full"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="">ทุกหมวดหมู่</option>
+            {categories.map((cat, idx) => (
+              <option key={idx} value={cat as string}>{cat as string}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-control w-full md:w-32 shrink-0">
+          <select 
+            className="select select-bordered w-full"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="A-Z">A - Z</option>
+            <option value="Z-A">Z - A</option>
+          </select>
+        </div>
+      </div>
+
+      {filteredMedications.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {Array.from({ length: 8 }).map((_, idx) => (
-            <div key={idx} className="card bg-base-100 shadow-xl border border-base-300 p-4 space-y-4">
-              <div className="skeleton h-48 w-full rounded-md" />
-              <div className="skeleton h-5 w-3/4" />
-              <div className="skeleton h-4 w-1/2" />
-              <div className="flex justify-between items-center pt-2">
-                <div className="skeleton h-8 w-24 rounded-lg" />
-                <div className="skeleton h-4 w-16" />
-              </div>
-            </div>
+          {filteredMedications.map((med: any) => (
+            <MedicationCard key={med.id} medication={med} />
           ))}
         </div>
-      </div>
-    );
-  }
-
-  // สถานะ Error: แสดง Alert ของ DaisyUI พร้อมปุ่ม Retry
-  if (isError) {
-    return (
-      <div className="max-w-md mx-auto my-12 alert alert-error shadow-lg">
-        <div>
-          <h3 className="font-bold">เกิดข้อผิดพลาด!</h3>
-          <div className="text-sm">{(error as Error).message}</div>
+      ) : (
+        <div className="text-center py-20 bg-base-100 rounded-xl border border-base-200 border-dashed">
+          <p className="text-lg font-medium text-base-content/60">ไม่พบยาที่คุณค้นหา</p>
+          <button 
+            className="btn btn-ghost mt-4"
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedCategory('');
+            }}
+          >
+            ล้างการค้นหา
+          </button>
         </div>
-        <button onClick={() => refetch()} className="btn btn-sm btn-outline">
-          ลองใหม่ (Retry)
-        </button>
-      </div>
-    );
-  }
-
-  // กรองข้อมูลตามคำค้นหา (Search) และสถานะ Bookmark (ดึงจาก data?.results เหมือน BookHub)
-  const medications: Medication[] = data?.results || [];
-  const filteredMedications = medications.filter((med) => {
-    const keyword = searchTerm.toLowerCase();
-    const matchSearch =
-      med.name.toLowerCase().includes(keyword) ||
-      (med.genericName || '').toLowerCase().includes(keyword) ||
-      (med.category || med.drugClass || '').toLowerCase().includes(keyword);
-    const matchBookmark = showOnlyBookmarks ? bookmarks.includes(med.id) : true;
-    return matchSearch && matchBookmark;
-  });
-
-  // แสดงผลรายการยาด้วย DaisyUI
-  return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Search Input & Bookmark Filter */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4 items-center bg-base-100 p-4 rounded-xl shadow-sm border border-base-300">
-        <input
-          type="text"
-          placeholder="ค้นหาชื่อยา หรือหมวดหมู่..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="input input-bordered w-full sm:flex-1"
-        />
-        <label className="label cursor-pointer gap-3 self-end sm:self-center">
-          <span className="label-text font-medium">
-            แสดงเฉพาะรายการที่บุ๊กมาร์ก <span className="badge badge-primary badge-sm ml-1">{bookmarks.length}</span>
-          </span>
-          <input
-            type="checkbox"
-            checked={showOnlyBookmarks}
-            onChange={(e) => setShowOnlyBookmarks(e.target.checked)}
-            className="checkbox checkbox-primary"
-          />
-        </label>
-      </div>
-
-      {/* Medication Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredMedications.map((med) => {
-          const isSaved = bookmarks.includes(med.id);
-          return (
-            <div
-              key={med.id}
-              className="card bg-base-100 shadow-md hover:shadow-xl transition-shadow border border-base-300 flex flex-col justify-between"
-            >
-              <figure className="px-4 pt-4">
-                {med.image ? (
-                  <img
-                    src={med.image}
-                    alt={med.name}
-                    className="rounded-lg h-48 w-full object-contain bg-base-200 p-2"
-                  />
-                ) : (
-                  <div className="h-48 w-full bg-base-200 rounded-lg flex items-center justify-center text-base-content/50">
-                    ไม่มีรูปภาพ
-                  </div>
-                )}
-              </figure>
-              <div className="card-body p-4 flex flex-col justify-between flex-1 text-left">
-                <div>
-                  <h3 className="card-title text-base line-clamp-2" title={med.name}>
-                    {med.name}
-                  </h3>
-                  <p className="text-xs text-base-content/70 mt-1">
-                    หมวดหมู่: {med.category || med.drugClass || 'ทั่วไป'}
-                  </p>
-                </div>
-                <div className="card-actions justify-between items-center mt-4 pt-2 border-t border-base-200">
-                  {/* คลิกเพื่อสลับ Bookmark (เก็บเฉพาะ ID ใน Zustand Store) */}
-                  <button
-                    onClick={() => toggleBookmark(med.id)}
-                    className={`btn btn-sm ${isSaved ? 'btn-warning' : 'btn-outline'}`}
-                  >
-                    {isSaved ? '★ บุ๊กมาร์กแล้ว' : '☆ บุ๊กมาร์ก'}
-                  </button>
-                  {/* ลิงก์ไปยัง Dynamic Route หน้ารายละเอียด */}
-                  <Link
-                    to={`/med/${med.id}`}
-                    className="link link-primary text-sm font-medium no-underline hover:underline"
-                  >
-                    รายละเอียด →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      )}
     </div>
   );
 };

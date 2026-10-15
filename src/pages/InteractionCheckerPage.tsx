@@ -64,7 +64,7 @@ export const InteractionCheckerPage: React.FC = () => {
     const matchPair = (checkA: (m: any) => boolean, checkB: (m: any) => boolean) => 
       (checkA(med1) && checkB(med2)) || (checkA(med2) && checkB(med1));
 
-    // --- กลุ่มเสี่ยงอันตราย (Danger) ---
+    // กลุ่มเสี่ยงอันตราย
     if (matchPair(isNSAID, isBloodThinner)) {
       setResult({ status: 'danger', message: `อันตราย! การใช้ยาแก้ปวดกลุ่ม NSAID ร่วมกับยาละลายลิ่มเลือด/ต้านเกล็ดเลือด เพิ่มความเสี่ยงเลือดออกในทางเดินอาหารขั้นรุนแรง` });
     }
@@ -84,7 +84,7 @@ export const InteractionCheckerPage: React.FC = () => {
       setResult({ status: 'danger', message: `อันตราย! ยาขับปัสสาวะอาจทำให้โพแทสเซียมต่ำ ซึ่งจะเพิ่มความเป็นพิษของ Digoxin (คลื่นไส้, ตาพร่า, หัวใจเต้นผิดจังหวะ)` });
     }
     
-    // --- กลุ่มควรเฝ้าระวัง (Warning) ---
+    // กลุ่มควรเฝ้าระวัง
     else if (matchPair(isPPI, isClopidogrel)) {
       setResult({ status: 'warning', message: `เฝ้าระวัง: ยาลดกรด (โดยเฉพาะ Omeprazole) อาจลดประสิทธิภาพของยา Clopidogrel ในการป้องกันลิ่มเลือด ควรปรึกษาแพทย์` });
     }

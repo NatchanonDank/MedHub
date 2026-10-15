@@ -60,6 +60,15 @@ export const useMyKit = () => {
   // กรองเอารายการยาที่อยู่ใน bookmarks มาแสดงในกระเป๋า
   const myKit = medications.filter((med) => bookmarks.includes(med.id));
 
+  // ฟังก์ชันตรวจสอบว่ายาตัวนี้อยู่ในกระเป๋าแล้วหรือยัง
+  const isInKit = (id: string | number) => bookmarks.includes(id);
+
+  // ฟังก์ชันสลับสถานะเพิ่ม/ลบออกจากกระเป๋า 
+  const toggleMyKit = (medOrId: any) => {
+    const id = typeof medOrId === 'object' && medOrId !== null ? medOrId.id : medOrId;
+    toggleBookmark(id);
+  };
+
   // ฟังก์ชันล้างกระเป๋ายาทั้งหมด
   const clearKit = () => {
     bookmarks.forEach((id) => toggleBookmark(id));
@@ -67,6 +76,8 @@ export const useMyKit = () => {
 
   return {
     myKit,
+    isInKit,
+    toggleMyKit,
     addToKit: toggleBookmark,
     removeFromKit: toggleBookmark,
     clearKit,

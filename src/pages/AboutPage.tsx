@@ -13,7 +13,7 @@ export const AboutPage: React.FC = () => {
       id: '1660701648',
       name: 'นายณัฏฐภพ สมิทธิธนันต์',
       nickname: 'เต้',
-      role: 'หาข้อมูลยาและรูปภาพประกอบ (Mock JSON Data Server, Data Attribution, UX/UI)',
+      role: 'ออกแบบหาข้อมูลยาและรูปภาพประกอบ (Mock JSON Data Server, Data Attribution, UX/UI)',
       img: '/images/profile2.jpg',
     },
   ];
