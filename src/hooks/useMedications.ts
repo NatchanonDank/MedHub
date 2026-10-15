@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMedStore } from '../stores/useMedStore';
 import {
   fetchMedicationsApi,
   fetchMedicationByIdApi,
@@ -47,4 +48,27 @@ export const useMedicationDetail = (id: string | undefined) => {
     enabled: !!id,             // ทำงานเมื่อมี id เท่านั้น
     staleTime: 1000 * 60 * 10, // แคชรายละเอียดไว้นาน 10 นาที
   });
+};
+
+// Hook สำหรับจัดการกระเป๋ายา
+export const useMyKit = () => {
+  const { data } = useMedications();
+  const { bookmarks, toggleBookmark } = useMedStore();
+
+  const medications = data?.results || [];
+  
+  // กรองเอารายการยาที่อยู่ใน bookmarks มาแสดงในกระเป๋า
+  const myKit = medications.filter((med) => bookmarks.includes(med.id));
+
+  // ฟังก์ชันล้างกระเป๋ายาทั้งหมด
+  const clearKit = () => {
+    bookmarks.forEach((id) => toggleBookmark(id));
+  };
+
+  return {
+    myKit,
+    addToKit: toggleBookmark,
+    removeFromKit: toggleBookmark,
+    clearKit,
+  };
 };

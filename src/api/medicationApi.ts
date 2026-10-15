@@ -1,5 +1,7 @@
+// ไฟล์: src/api/medicationApi.ts
+
 export interface Medication {
-  id: number;
+  id: number | string;
   name: string;
   genericName?: string;
   brandName?: string;
@@ -10,7 +12,9 @@ export interface Medication {
   dosage?: string;
   sideEffects?: string | string[];
   warnings?: string | string[];
+  interactions?: string[];
   image?: string;
+  imageUrl?: string;
 }
 
 export interface MedicationApiResponse {
@@ -18,16 +22,13 @@ export interface MedicationApiResponse {
   results: Medication[];
 }
 
-// Network Skeleton Loading
 const simulateNetworkDelay = (ms = 400) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-// ป้องกัน Vite ส่ง <!doctype html> กลับมา
 const fetchJsonSafely = async (): Promise<unknown> => {
-  // วางไฟล์ไว้ที่ public/api/
   const candidatePaths = [
-    '/api/medications.json',
     '/api/mock-medications.json',
+    '/data/mock-medications.json',
     '/mock-medications.json',
   ];
 
@@ -35,20 +36,16 @@ const fetchJsonSafely = async (): Promise<unknown> => {
     try {
       const res = await fetch(path);
       const contentType = res.headers.get('content-type') || '';
-
-      // ตรวจสอบว่าต้องได้ status 200 และไม่ใช่ไฟล์ index.html
       if (res.ok && !contentType.includes('text/html')) {
         return await res.json();
       }
     } catch {}
   }
 
-  throw new Error(
-    'ไม่พบไฟล์ของยา!'
-  );
+  throw new Error('ไม่พบไฟล์ JSON ของยาในโฟลเดอร์ public/api/');
 };
 
-// แปลงข้อมูล JSON ให้เป็น Array ของ Medication พร้อมผูก Path รูปภาพ
+// ฟังก์ชันแปลงข้อมูลและจัดการ Path รูปภาพให้ถูกต้อง
 const normalizeMedications = (raw: unknown): Medication[] => {
   let list: Record<string, unknown>[] = [];
 
@@ -63,23 +60,35 @@ const normalizeMedications = (raw: unknown): Medication[] => {
 
   return list.map((item, index) => {
     const name = String(item.name || item.title || `Medication ${index + 1}`);
+    
+    // ทำความสะอาดชื่อยาเพื่อใช้หาไฟล์รูปสำรอง (เช่น "Albuterol Sulfate HFA" -> "albuterol")
     const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const rawImage = item.image ? String(item.image) : '';
+
+    // รองรับทั้งฟิลด์ image และ imageUrl จาก JSON
+    const rawImage = String(item.imageUrl || item.image || '');
+    
+    let resolvedImage = '';
+    if (rawImage) {
+      if (rawImage.startsWith('http') || rawImage.startsWith('/images/')) {
+        resolvedImage = rawImage;
+      } else {
+        resolvedImage = `/images/${rawImage.replace(/^\/+/, '')}`;
+      }
+    } else {
+      // หากไม่มีฟิลด์รูป ให้ดึงจากชื่อไฟล์ใน public/images/ อัตโนมัติ
+      resolvedImage = `/images/${cleanName}.png`;
+    }
 
     return {
       ...item,
-      id: typeof item.id === 'number' ? item.id : Number(item.id) || index + 1,
+      id: item.id ?? index + 1,
       name,
-      image: rawImage
-        ? rawImage.startsWith('/') || rawImage.startsWith('http')
-          ? rawImage
-          : `/images/${rawImage}`
-        : `/images/${cleanName}.png`,
+      image: resolvedImage,
+      imageUrl: resolvedImage,
     } as Medication;
   });
 };
 
-// API Endpoint: ดึงรายการยาทั้งหมด
 export const fetchMedicationsApi = async (): Promise<MedicationApiResponse> => {
   await simulateNetworkDelay(400);
   const rawData = await fetchJsonSafely();
@@ -91,7 +100,6 @@ export const fetchMedicationsApi = async (): Promise<MedicationApiResponse> => {
   };
 };
 
-// จำลอง API Endpoint: ดึงข้อมูลยารายตัวตาม ID
 export const fetchMedicationByIdApi = async (id: string | number): Promise<Medication> => {
   await simulateNetworkDelay(300);
   const rawData = await fetchJsonSafely();
