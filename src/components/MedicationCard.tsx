@@ -1,9 +1,6 @@
 import { Link } from 'react-router';
-import { useMedStore } from '../stores/useMedStore';
 
 const MedicationCard = ({ medication }: { medication: any }) => {
-  const { bookmarks, toggleBookmark } = useMedStore();
-  const isSaved = bookmarks.includes(medication.id);
   const medImage = medication.imageUrl || medication.image;
 
   return (
@@ -18,7 +15,7 @@ const MedicationCard = ({ medication }: { medication: any }) => {
           }}
         />
       </figure>
-      <div className="card-body p-5 flex flex-col flex-1 text-center items-center">     
+      <div className="card-body p-5 flex flex-col flex-1 text-center items-center">    
         <div className="text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider mb-1">
           {medication.category || medication.drugClass || 'ทั่วไป'}
         </div>
@@ -46,7 +43,6 @@ const MedicationCard = ({ medication }: { medication: any }) => {
           <Link to={`/med/${medication.id}`} className="btn btn-primary btn-sm w-full font-medium">
             ดูข้อมูล
           </Link>
-
         </div>
       </div>
     </div>
