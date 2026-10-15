@@ -1,20 +1,19 @@
-// ไฟล์: src/pages/MedDetailPage.tsx
 import React from 'react';
 import { useParams, Link } from 'react-router';
 import { useMedicationDetail } from '../hooks/useMedications';
 import { useMedStore } from '../stores/useMedStore';
 
 export const MedDetailPage: React.FC = () => {
-  // 1. ดึง ID จาก Dynamic Route Parameter (เช่น /med/1 -> id = '1')
+  // ดึง ID จาก Dynamic Route Parameter
   const { id } = useParams<{ id: string }>();
 
-  // 2. ดึงข้อมูลยาตัวนี้จาก TanStack Query (แสดงผลทันทีจาก Cache 0ms)
+  // ดึงข้อมูลยาตัวนี้จาก TanStack Query
   const { data: med, isLoading, isError, error, refetch } = useMedicationDetail(id);
 
-  // 3. ดึงสถานะ Bookmark และฟังก์ชัน toggle จาก Zustand
+  // ดึงสถานะ Bookmark และฟังก์ชัน toggle จาก Zustand
   const { bookmarks, toggleBookmark } = useMedStore();
 
-  // 4. สถานะ Loading: แสดง Skeleton Pulse รูปทรงหน้ารายละเอียดด้วย DaisyUI
+  // สถานะ Loading: แสดง Skeleton Pulse รูปทรงหน้ารายละเอียดด้วย DaisyUI
   if (isLoading)
     return (
       <div className="card max-w-xl mx-auto bg-base-100 shadow-xl border border-base-300 p-6 space-y-4 my-8">
@@ -27,7 +26,7 @@ export const MedDetailPage: React.FC = () => {
       </div>
     );
 
-  // 5. สถานะ Error: แสดงข้อความแจ้งเตือน พร้อมปุ่ม Retry และปุ่มย้อนกลับด้วย DaisyUI Alert
+  // สถานะ Error: แสดงข้อความแจ้งเตือน พร้อมปุ่ม Retry และปุ่มย้อนกลับด้วย DaisyUI Alert
   if (isError || !med)
     return (
       <div className="max-w-md mx-auto my-12 alert alert-error shadow-lg flex flex-col items-center gap-4 text-center">
@@ -46,10 +45,10 @@ export const MedDetailPage: React.FC = () => {
       </div>
     );
 
-  // 6. ตรวจสอบว่ายาตัวนี้ถูก Bookmark ไว้หรือไม่
+  // ตรวจสอบว่ายาตัวนี้ถูก Bookmark ไว้หรือไม่
   const isSaved = bookmarks.includes(med.id);
 
-  // 7. แสดงผลข้อมูลรายละเอียดของยาด้วย DaisyUI Card
+  // แสดงผลข้อมูลรายละเอียดของยาด้วย DaisyUI Card
   return (
     <div className="card max-w-xl mx-auto bg-base-100 shadow-2xl border border-base-300 p-6 my-8">
       <div className="mb-4 text-left">

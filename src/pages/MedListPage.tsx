@@ -1,21 +1,20 @@
-// ไฟล์: src/pages/MedListPage.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { useMedications, type Medication } from '../hooks/useMedications';
 import { useMedStore } from '../stores/useMedStore';
 
 export const MedListPage: React.FC = () => {
-  // 1. ดึง Server State จาก TanStack Query
+  // ดึง Server State จาก TanStack Query
   const { data, isLoading, isError, error, refetch } = useMedications();
 
-  // 2. ดึง Client State จาก Zustand Store
+  // ดึง Client State จาก Zustand Store
   const { bookmarks, toggleBookmark } = useMedStore();
 
-  // 3. Local UI State สำหรับช่องค้นหาและตัวกรอง
+  // Local UI State สำหรับช่องค้นหาและตัวกรอง
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyBookmarks, setShowOnlyBookmarks] = useState(false);
 
-  // 4. สถานะ Loading: แสดงโครงร่างกระพริบด้วย DaisyUI Skeleton
+  // สถานะ Loading: แสดงโครงร่างกระพริบด้วย DaisyUI Skeleton
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -24,7 +23,7 @@ export const MedListPage: React.FC = () => {
           <div className="skeleton h-12 flex-1 rounded-lg" />
           <div className="skeleton h-12 w-48 rounded-lg" />
         </div>
-        {/* Skeleton Grid จำลองการ์ดยา 8 ใบ */}
+        {/* Skeleton Grid จำลองการ์ดยา */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, idx) => (
             <div key={idx} className="card bg-base-100 shadow-xl border border-base-300 p-4 space-y-4">
@@ -42,7 +41,7 @@ export const MedListPage: React.FC = () => {
     );
   }
 
-  // 5. สถานะ Error: แสดง Alert ของ DaisyUI พร้อมปุ่ม Retry
+  // สถานะ Error: แสดง Alert ของ DaisyUI พร้อมปุ่ม Retry
   if (isError) {
     return (
       <div className="max-w-md mx-auto my-12 alert alert-error shadow-lg">
@@ -57,7 +56,7 @@ export const MedListPage: React.FC = () => {
     );
   }
 
-  // 6. กรองข้อมูลตามคำค้นหา (Search) และสถานะ Bookmark (ดึงจาก data?.results เหมือน BookHub)
+  // กรองข้อมูลตามคำค้นหา (Search) และสถานะ Bookmark (ดึงจาก data?.results เหมือน BookHub)
   const medications: Medication[] = data?.results || [];
   const filteredMedications = medications.filter((med) => {
     const keyword = searchTerm.toLowerCase();
@@ -69,7 +68,7 @@ export const MedListPage: React.FC = () => {
     return matchSearch && matchBookmark;
   });
 
-  // 7. แสดงผลรายการยาด้วย DaisyUI
+  // แสดงผลรายการยาด้วย DaisyUI
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Search Input & Bookmark Filter */}

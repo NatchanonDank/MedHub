@@ -1,14 +1,13 @@
-// ไฟล์: src/stores/useMedStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// 1. กำหนด Type ของ State และ Action
+// กำหนด Type ของ State และ Action
 interface MedState {
   bookmarks: number[];                    // เก็บเฉพาะ Array ของ ID ยาที่ถูก Bookmark (Client State)
   toggleBookmark: (id: number) => void;   // ฟังก์ชันสำหรับ สลับสถานะ Bookmark (เพิ่ม/ลบ)
 }
 
-// 2. สร้าง Store ด้วย create() และครอบด้วย persist() เพื่อบันทึกลง LocalStorage อัตโนมัติ
+// สร้าง Store ด้วย create() และครอบด้วย persist() เพื่อบันทึกลง LocalStorage อัตโนมัติ
 export const useMedStore = create<MedState>()(
   persist(
     (set) => ({

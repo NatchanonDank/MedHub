@@ -1,6 +1,3 @@
-// ไฟล์: src/api/medicationApi.ts
-
-// 1. ประกาศโครงสร้างข้อมูลของยา
 export interface Medication {
   id: number;
   name: string;
@@ -16,21 +13,19 @@ export interface Medication {
   image?: string;
 }
 
-// โครงสร้าง Response จำลองให้เหมือน GutendexResponse ของอาจารย์ ({ results: [...] })
 export interface MedicationApiResponse {
   count: number;
   results: Medication[];
 }
 
-// จำลองความหน่วงของ Network (400ms) เพื่อให้เห็น Skeleton Loading เหมือนดึงจาก API จริง
+// Network Skeleton Loading
 const simulateNetworkDelay = (ms = 400) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-// ฟังก์ชันดึง JSON ที่ป้องกันปัญหา Vite ส่ง index.html (<!doctype html>) กลับมา
+// ป้องกัน Vite ส่ง <!doctype html> กลับมา
 const fetchJsonSafely = async (): Promise<unknown> => {
-  // รองรับทั้งกรณีวางไฟล์ไว้ที่ public/data/ หรือ public/api/
+  // วางไฟล์ไว้ที่ public/api/
   const candidatePaths = [
-    '/data/mock-medications.json',
     '/api/medications.json',
     '/api/mock-medications.json',
     '/mock-medications.json',
@@ -41,21 +36,19 @@ const fetchJsonSafely = async (): Promise<unknown> => {
       const res = await fetch(path);
       const contentType = res.headers.get('content-type') || '';
 
-      // ตรวจสอบว่าต้องได้ status 200 และต้องไม่ใช่ไฟล์ HTML (index.html)
+      // ตรวจสอบว่าต้องได้ status 200 และไม่ใช่ไฟล์ index.html
       if (res.ok && !contentType.includes('text/html')) {
         return await res.json();
       }
-    } catch {
-      // หาก path นี้มีปัญหา ให้ลอง path ถัดไป
-    }
+    } catch {}
   }
 
   throw new Error(
-    'ไม่พบไฟล์ JSON ของยา! กรุณาตรวจสอบว่ามีไฟล์ public/data/mock-medications.json หรือ public/api/medications.json อยู่จริง'
+    'ไม่พบไฟล์ของยา!'
   );
 };
 
-// ฟังก์ชันแปลงข้อมูล JSON ดิบให้เป็น Array ของ Medication พร้อมผูก Path รูปภาพ
+// แปลงข้อมูล JSON ให้เป็น Array ของ Medication พร้อมผูก Path รูปภาพ
 const normalizeMedications = (raw: unknown): Medication[] => {
   let list: Record<string, unknown>[] = [];
 
@@ -86,7 +79,7 @@ const normalizeMedications = (raw: unknown): Medication[] => {
   });
 };
 
-// 2. จำลอง API Endpoint: ดึงรายการยาทั้งหมด
+// API Endpoint: ดึงรายการยาทั้งหมด
 export const fetchMedicationsApi = async (): Promise<MedicationApiResponse> => {
   await simulateNetworkDelay(400);
   const rawData = await fetchJsonSafely();
@@ -98,7 +91,7 @@ export const fetchMedicationsApi = async (): Promise<MedicationApiResponse> => {
   };
 };
 
-// 3. จำลอง API Endpoint: ดึงข้อมูลยารายตัวตาม ID
+// จำลอง API Endpoint: ดึงข้อมูลยารายตัวตาม ID
 export const fetchMedicationByIdApi = async (id: string | number): Promise<Medication> => {
   await simulateNetworkDelay(300);
   const rawData = await fetchJsonSafely();

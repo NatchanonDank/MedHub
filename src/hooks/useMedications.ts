@@ -1,4 +1,3 @@
-// ไฟล์: src/hooks/useMedications.ts
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchMedicationsApi,
@@ -9,26 +8,24 @@ import {
 
 export type { Medication, MedicationApiResponse };
 
-// 1. Custom Hook สำหรับดึงรายการยาทั้งหมด (หน้ารายการ)
+// Hook สำหรับดึงรายการยาทั้งหมด
 export const useMedications = () => {
   return useQuery<MedicationApiResponse>({
-    queryKey: ['medications'], // คีย์สำหรับระบุ Cache ของรายการยา
+    queryKey: ['medications'],
     queryFn: async () => {
-      // เรียกผ่าน API Layer ที่จำลอง HTTP Request
       return await fetchMedicationsApi();
     },
-    staleTime: 1000 * 60 * 5, // ข้อมูลถือว่าสดใหม่ 5 นาที (ไม่ต้อง Fetch ซ้ำจาก Network)
+    staleTime: 1000 * 60 * 5, 
   });
 };
 
-// 2. Custom Hook สำหรับดึงรายละเอียดยาตัวที่ต้องการ (หน้ารายละเอียด)
+// Hook สำหรับดึงรายละเอียดยาตัวที่ต้องการ
 export const useMedicationDetail = (id: string | undefined) => {
   const queryClient = useQueryClient();
 
   return useQuery<Medication>({
-    queryKey: ['medication', id], // คีย์แยกต่างหากตาม ID ของยาแต่ละตัว
+    queryKey: ['medication', id], // Key แยกต่างหากตาม ID ของยาแต่ละตัว
     queryFn: async () => {
-      // ลองดึงจาก API โดยตรง
       try {
         return await fetchMedicationByIdApi(id!);
       } catch (err) {
