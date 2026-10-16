@@ -1,5 +1,3 @@
-// ไฟล์: src/api/medicationApi.ts
-
 export interface Medication {
   id: number | string;
   name: string;
