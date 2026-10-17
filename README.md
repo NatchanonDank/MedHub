@@ -1,32 +1,58 @@
-# React + TypeScript + Vite
+# MedHub (Medication Hub)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**MedHub** คือเว็บแอปพลิเคชันศูนย์รวมข้อมูลยาและการจัดการกระเป๋ายาส่วนตัว (CS319 Mini Project 2) ที่ออกแบบมาเพื่อยกระดับความปลอดภัยในการใช้ยาของผู้ป่วย โดยมีระบบตรวจสอบปฏิกิริยาระหว่างยา (Drug Interaction Checker) เพื่อป้องกันความเสี่ยงจากการใช้ยาตีกัน
 
-Currently, two official plugins are available:
+## Features (ฟีเจอร์หลัก)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Search & Filter:** ค้นหาข้อมูลยาจากชื่อยา ชื่อสามัญ และกรองตามหมวดหมู่ได้แบบเรียลไทม์
+- **Medication Details:** แสดงรายละเอียดของยา ข้อบ่งใช้ ผลข้างเคียง และคำเตือนอย่างชัดเจน
+- **My Kit:** บันทึกยาที่กำลังใช้งานอยู่ (ข้อมูลไม่สูญหายเมื่อรีเฟรชหน้าเว็บ)
+- **Interaction Checker:** ระบบตรวจสอบความปลอดภัยเมื่อใช้ยา 2 ชนิดร่วมกัน พร้อมแจ้งเตือนระดับความเสี่ยง (Safe, Warning, Danger)
 
-## React Compiler
+## Tech Stack (เทคโนโลยีที่ใช้)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend Framework:** React (Vite) + TypeScript
+- **Styling:** Tailwind CSS / DaisyUI (อ้างอิงตามคลาส UI)
+- **State Management:** Zustand (พร้อม Persist Middleware เพื่อเชื่อมต่อกับ LocalStorage)
+- **Data Fetching:** TanStack Query (React Query)
+- **Routing:** React Router DOM (พร้อมรองรับ Dynamic Routing)
 
-## Expanding the Oxlint configuration
+## โครงสร้างทางเทคนิคที่สำคัญ (Technical Implementation)
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+โปรเจกต์นี้ได้พัฒนาขึ้นตามข้อกำหนดของ Mini Project 2 อย่างเคร่งครัด:
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+1. **TanStack Query สำหรับจำลองการเรียก API:**
+   - ข้อมูลยาถูกเก็บไว้ที่ `public/data/mock-medications.json`
+   - ใช้ `fetch` ทำงานร่วมกับ `useQuery` เพื่อดึงข้อมูลเสมือนการยิง API จริง
+   - จัดการ State ของ Loading และ Error อัตโนมัติ พร้อมตั้งค่า `staleTime: 5 นาที` เพื่อทำ Data Caching ลดการโหลดซ้ำซ้อน
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+2. **Zustand & LocalStorage:**
+   - จัดการ Global State ของกระเป๋ายา (My Kit) เพื่อให้ Component ต่างๆ เช่น หน้า Detail และ Navbar อัปเดตข้อมูลได้ตรงกันทันที
+   - ใช้ `persist` middleware เพื่อให้ข้อมูลกระเป๋ายายังคงอยู่แม้ผู้ใช้จะปิดหรือรีเฟรชเบราว์เซอร์
+
+3. **React Router & Dynamic Routing:**
+   - ทำงานในรูปแบบ Single Page Application (SPA)
+   - ใช้ Dynamic Route เช่น `/medication/:id` ร่วมกับ `useParams` เพื่อดึงข้อมูลยาแต่ละชนิดมาแสดงผลในหน้ารายละเอียดได้อย่างถูกต้อง
+
+## การติดตั้งและรันโปรเจกต์ (Installation & Setup)
+
+1. **Clone repository:**
+   ```bash
+   git clone https://github.com/your-username/medication-hub.git
+   cd medication-hub
+   ```
+
+2. **ติดตั้ง Dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **รันเซิร์ฟเวอร์จำลอง (Development Server):**
+   ```bash
+   npm run dev
+   ```
+
+4. เปิดเบราว์เซอร์และเข้าไปที่ `http://localhost:5173`
+
+---
+*Developed for CS319 Mini Project 2*
