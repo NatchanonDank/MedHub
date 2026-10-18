@@ -11,7 +11,7 @@ export const AboutPage: React.FC = () => {
     },
     {
       id: '1660701648',
-      name: 'นายณัฏฐภพ สมิทธิธนันต์',
+      name: 'นายณัฐภพ สมิทธินันต์',
       nickname: 'เต้',
       role: 'ออกแบบหาข้อมูลยาและรูปภาพประกอบ (Mock JSON Data Server, Data Attribution, UX/UI)',
       img: '/images/profile2.jpg',
